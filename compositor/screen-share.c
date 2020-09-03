@@ -1119,39 +1119,33 @@ weston_output_share(struct weston_output *output, const char* command)
 }
 
 static struct weston_output *
-weston_output_find(struct weston_compositor *c, int32_t x, int32_t y)
+weston_output_find_by_id(struct weston_compositor *c, uint32_t id)
 {
 	struct weston_output *output;
 
 	wl_list_for_each(output, &c->output_list, link) {
-		if (x >= output->x && y >= output->y &&
-		    x < output->x + output->width &&
-		    y < output->y + output->height)
-			return output;
-	}
 
+		weston_log("output id: %u\n",output->id);
+		weston_log("output name: %s\n",output->name);
+
+		if (output->id == id) {
+			return output;
+		}
+
+	}
 	return NULL;
 }
 
 static void
-share_output_binding(struct weston_keyboard *keyboard,
-		     const struct timespec *time, uint32_t key, void *data)
+share_output_on_init(struct weston_compositor *c, uint32_t output_id, void *data)
 {
-	struct weston_output *output;
-	struct weston_pointer *pointer;
 	struct screen_share *ss = data;
+	struct weston_output *output;
 
-	pointer = weston_seat_get_pointer(keyboard->seat);
-	if (!pointer) {
-		weston_log("Cannot pick output: Seat does not have pointer\n");
-		return;
-	}
+	output = weston_output_find_by_id(c, output_id);
 
-	output = weston_output_find(pointer->seat->compositor,
-				    wl_fixed_to_int(pointer->x),
-				    wl_fixed_to_int(pointer->y));
 	if (!output) {
-		weston_log("Cannot pick output: Pointer not on any output\n");
+		weston_log("Cannot get output\n");
 		return;
 	}
 
@@ -1165,6 +1159,7 @@ wet_module_init(struct weston_compositor *compositor,
 	struct screen_share *ss;
 	struct weston_config *config;
 	struct weston_config_section *section;
+	uint32_t output_id;
 
 	ss = zalloc(sizeof *ss);
 	if (ss == NULL)
@@ -1176,9 +1171,10 @@ wet_module_init(struct weston_compositor *compositor,
 	section = weston_config_get_section(config, "screen-share", NULL, NULL);
 
 	weston_config_section_get_string(section, "command", &ss->command, "");
+	weston_config_section_get_uint(section, "output-id", &output_id, 0);
+	weston_log("output-id parsed from config: %u\n", output_id);
 
-	weston_compositor_add_key_binding(compositor, KEY_S,
-				          MODIFIER_CTRL | MODIFIER_ALT,
-					  share_output_binding, ss);
+	share_output_on_init(compositor, output_id, ss);
+
 	return 0;
 }
