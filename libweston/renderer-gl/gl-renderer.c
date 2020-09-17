@@ -1548,7 +1548,7 @@ gl_renderer_read_pixels(struct weston_output *output,
 		return -1;
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(x, y, width, height, gl_format,
+	glReadPixels(x, y, width, height, GL_RGBA,
 		     GL_UNSIGNED_BYTE, pixels);
 
 	return 0;
