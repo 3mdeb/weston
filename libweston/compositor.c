@@ -7430,6 +7430,7 @@ weston_compositor_create(struct wl_display *display,
 
 	wl_data_device_manager_init(ec->wl_display);
 
+	weston_log("Created init wl_shm for compositor!\n");
 	wl_display_init_shm(ec->wl_display);
 
 	loop = wl_display_get_event_loop(ec->wl_display);

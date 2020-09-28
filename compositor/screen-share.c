@@ -712,7 +712,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		       uint32_t id, const char *interface, uint32_t version)
 {
 	struct shared_output *so = data;
-
+	weston_log("interface: %s\n", interface);
 	if (strcmp(interface, "wl_compositor") == 0) {
 		so->parent.compositor =
 			wl_registry_bind(registry,
@@ -933,6 +933,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	struct wl_event_loop *loop;
 	struct ss_seat *seat, *tmp;
 	int epoll_fd;
+	weston_log("parent fd is: %d\n", parent_fd);
 
 	so = zalloc(sizeof *so);
 	if (so == NULL)
@@ -941,14 +942,24 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	wl_list_init(&so->seat_list);
 
 	so->parent.display = wl_display_connect_to_fd(parent_fd);
-	if (!so->parent.display)
+	if (!so->parent.display) {
+		weston_log("goto func\n");
 		goto err_alloc;
+	}
+
+	weston_log("Get registry\n");
 
 	so->parent.registry = wl_display_get_registry(so->parent.display);
 	if (!so->parent.registry)
+	{
+		weston_log("Failed to get registry.\n");
 		goto err_display;
+	}
+	weston_log("Add listener to registry\n");
 	wl_registry_add_listener(so->parent.registry,
 				 &registry_listener, so);
+	wl_display_dispatch(so->parent.display);
+	weston_log("Display dispatch\n");
 	wl_display_roundtrip(so->parent.display);
 	if (so->parent.shm == NULL) {
 		weston_log("Screen share failed: No wl_shm found\n");
@@ -963,7 +974,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 		weston_log("Screen share failed: No wl_compositor found\n");
 		goto err_display;
 	}
-
+	weston_log("Screen share: shm, fshell and compositor run without errors\n");
 	/* Get SHM formats */
 	wl_display_roundtrip(so->parent.display);
 	if (!(so->parent.shm_formats & (1 << WL_SHM_FORMAT_XRGB8888))) {
@@ -1122,6 +1133,8 @@ static struct weston_output *
 weston_output_find_by_id(struct weston_compositor *c, uint32_t id)
 {
 	struct weston_output *output;
+
+	weston_log("List compositors %d\n", &c->state);
 
 	wl_list_for_each(output, &c->output_list, link) {
 
