@@ -905,7 +905,7 @@ seat_destroyed(struct wl_listener *listener, void *data)
 	struct workspace *ws = container_of(listener,
 					    struct workspace,
 					    seat_destroyed_listener);
-
+	weston_log("desktop-shell/shell.c: seat_destroyed: Seat name %s\n", seat->seat_name);
 	wl_list_for_each_safe(state, next, &ws->focus_list, link)
 		if (state->seat == seat)
 			wl_list_remove(&state->link);
@@ -5133,7 +5133,7 @@ static void
 handle_seat_created(struct wl_listener *listener, void *data)
 {
 	struct weston_seat *seat = data;
-
+	weston_log("desktop-shell/shell.c: handle_seat_created: Seat name %s\n", seat->seat_name);
 	create_shell_seat(seat);
 }
 

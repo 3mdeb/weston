@@ -378,14 +378,14 @@ ss_seat_create(struct shared_output *so, uint32_t id)
 
 	wl_seat_add_listener(seat->parent.seat, &ss_seat_listener, seat);
 	wl_seat_set_user_data(seat->parent.seat, seat);
-	weston_log("screen-share: Seat %s id %d created. Exit ss_seat_create\n", seat->base.seat_name, seat->id);
+	weston_log("screen-share: Seat %s %d id %d created. Exit ss_seat_create\n", seat->base.seat_name, &(seat->base.seat_name), seat->id);
 	return seat;
 }
 
 static void
 ss_seat_destroy(struct ss_seat *seat)
 {
-	weston_log("screen-share: Enter ss_seat_destroy. Seat %s id %d\n", seat->base.seat_name, seat->id);
+	weston_log("screen-share: Enter ss_seat_destroy. Seat %s %d id %d\n", seat->base.seat_name, &(seat->base.seat_name), seat->id);
 	if (seat->parent.pointer){
 		wl_pointer_release(seat->parent.pointer);
 		weston_log("screen-share: wl_pointer_release\n");
@@ -400,7 +400,7 @@ ss_seat_destroy(struct ss_seat *seat)
 
 	weston_seat_release(&seat->base);
 	free(seat);
-	weston_log("screen-share: Free seat. Exit ss_seat_destroy\n");
+	weston_log("screen-share: Free seat %s. Exit ss_seat_destroy\n", seat->base.seat_name);
 }
 
 static void

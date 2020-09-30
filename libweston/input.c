@@ -456,16 +456,21 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 	struct weston_pointer *pointer = grab->pointer;
 	struct weston_view *view;
 	wl_fixed_t sx, sy;
-
-	if (pointer->button_count > 0)
+	weston_log("libweston/input.c: Enter to default_grab_pointer_focus\n");
+	if (pointer->button_count > 0) {
+		weston_log("libweston/input.c [461]: pointer->button_count > 0\n");
 		return;
+	}
 
 	view = weston_compositor_pick_view(pointer->seat->compositor,
 					   pointer->x, pointer->y,
 					   &sx, &sy);
+	weston_log("libweston/input.c weston_compositor_pick_view executed correctly\n");
 
 	if (pointer->focus != view || pointer->sx != sx || pointer->sy != sy)
 		weston_pointer_set_focus(pointer, view, sx, sy);
+
+	weston_log("libweston/input.c: Exit default_grab_pointer_focus\n");
 }
 
 static void
@@ -1619,8 +1624,11 @@ weston_pointer_start_grab(struct weston_pointer *pointer,
 WL_EXPORT void
 weston_pointer_end_grab(struct weston_pointer *pointer)
 {
+	weston_log("libweston/input.c: Enter weston_pointer_end_grab\n");
 	pointer->grab = &pointer->default_grab;
+	weston_log("libweston/input.c: pointer->grab = &pointer->default_grab\n");
 	pointer->grab->interface->focus(pointer->grab);
+	weston_log("libweston/input.c: pointer->grab->interface->focus(pointer->grab)\n");
 }
 
 static void

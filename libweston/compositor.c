@@ -606,6 +606,7 @@ weston_view_to_global_float(struct weston_view *view,
 		*x = sx + view->geometry.x;
 		*y = sy + view->geometry.y;
 	}
+	weston_log("libweston/compositor.c: Exit from weston_view_to_global_float\n");
 }
 
 /** Transform a point to buffer coordinates
@@ -1660,13 +1661,15 @@ weston_view_from_global_fixed(struct weston_view *view,
 			      wl_fixed_t *vx, wl_fixed_t *vy)
 {
 	float vxf, vyf;
-
+	weston_log("libweston/compositor.c: Enter to weston_view_from_global_fixed\n");
 	weston_view_from_global_float(view,
 				      wl_fixed_to_double(x),
 				      wl_fixed_to_double(y),
 				      &vxf, &vyf);
+	weston_log("libweston/compositor.c: weston_view_from_global_float executed correctly. vxf = %f, vyf = %f\n", vxf, vyf);
 	*vx = wl_fixed_from_double(vxf);
 	*vy = wl_fixed_from_double(vyf);
+	weston_log("libweston/compositor.c: Exit from weston_view_from_global_fixed\n");
 }
 
 WL_EXPORT void
@@ -2091,16 +2094,20 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 	int view_ix, view_iy;
 	int ix = wl_fixed_to_int(x);
 	int iy = wl_fixed_to_int(y);
-
+	weston_log("libweston/compositor.c: Enter to weston_compositor_pick_view: Compositor address %d\n", &compositor);
+	weston_log("libweston/compositor.c: &compositor->view_list address %d\n", &compositor->view_list);
 	wl_list_for_each(view, &compositor->view_list, link) {
+		weston_log("libweston/compositor.c: wl_list_for_each\n");
 		if (!pixman_region32_contains_point(
-				&view->transform.boundingbox, ix, iy, NULL))
+				&view->transform.boundingbox, ix, iy, NULL)){
+			weston_log("libweston/compositor.c: pixman_region32_contains_point. Continue..\n");
 			continue;
-
+		}
 		weston_view_from_global_fixed(view, x, y, &view_x, &view_y);
+		weston_log("libweston/compositor.c: executed weston_view_from_global_fixed\n");
 		view_ix = wl_fixed_to_int(view_x);
 		view_iy = wl_fixed_to_int(view_y);
-
+		weston_log("libweston/compositor.c: executed wl_fixed_to_int\n");
 		if (!pixman_region32_contains_point(&view->surface->input,
 						    view_ix, view_iy, NULL))
 			continue;
@@ -2114,9 +2121,10 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 		*vy = view_y;
 		return view;
 	}
-
+	weston_log("libweston/compositor.c: exit from wl_list_for_each\n");
 	*vx = wl_fixed_from_int(-1000000);
 	*vy = wl_fixed_from_int(-1000000);
+	weston_log("libweston/compositor.c: return NULL\n");
 	return NULL;
 }
 
