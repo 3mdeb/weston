@@ -65,6 +65,7 @@ struct shared_output {
 		struct wl_surface *surface;
 		struct wl_callback *frame_cb;
 		struct zwp_fullscreen_shell_mode_feedback_v1 *mode_feedback;
+		bool roundtrip_needed;
 	} parent;
 
 	struct wl_event_source *event_source;
@@ -377,24 +378,29 @@ ss_seat_create(struct shared_output *so, uint32_t id)
 
 	wl_seat_add_listener(seat->parent.seat, &ss_seat_listener, seat);
 	wl_seat_set_user_data(seat->parent.seat, seat);
-
+	weston_log("screen-share: Seat %s id %d created. Exit ss_seat_create\n", seat->base.seat_name, seat->id);
 	return seat;
 }
 
 static void
 ss_seat_destroy(struct ss_seat *seat)
 {
-	if (seat->parent.pointer)
+	weston_log("screen-share: Enter ss_seat_destroy. Seat %s id %d\n", seat->base.seat_name, seat->id);
+	if (seat->parent.pointer){
 		wl_pointer_release(seat->parent.pointer);
-	if (seat->parent.keyboard)
+		weston_log("screen-share: wl_pointer_release\n");
+	}
+	if (seat->parent.keyboard){
 		wl_keyboard_release(seat->parent.keyboard);
+		weston_log("screen-share: wl_keyboard_release\n");
+	}
 	wl_seat_destroy(seat->parent.seat);
 
 	wl_list_remove(&seat->link);
 
 	weston_seat_release(&seat->base);
-
 	free(seat);
+	weston_log("screen-share: Free seat. Exit ss_seat_destroy\n");
 }
 
 static void
@@ -699,7 +705,7 @@ static void
 shm_handle_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 {
 	struct shared_output *so = data;
-
+	weston_log("Create shm format %d\n", format);
 	so->parent.shm_formats |= (1 << format);
 }
 
@@ -712,7 +718,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		       uint32_t id, const char *interface, uint32_t version)
 {
 	struct shared_output *so = data;
-	weston_log("interface: %s\n", interface);
+	weston_log("interface: %s, id: %d\n", interface, id);
 	if (strcmp(interface, "wl_compositor") == 0) {
 		so->parent.compositor =
 			wl_registry_bind(registry,
@@ -961,6 +967,35 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	wl_display_dispatch(so->parent.display);
 	weston_log("Display dispatch\n");
 	wl_display_roundtrip(so->parent.display);
+/*
+	while (1)
+	{
+		if (wl_display_roundtrip(so->parent.display) != -1)
+			break;
+	}
+/*
+	for (int i=0; i < 5; i++){
+		wl_display_roundtrip(so->parent.display);
+	}
+
+	weston_log("Manually bind shm\n");
+	so->parent.shm =
+		wl_registry_bind(so->parent.registry,
+				10, &wl_shm_interface, 1);
+	so->parent.shm_formats |= (1 << WL_SHM_FORMAT_XRGB8888);
+
+	weston_log("Manually bind fshell\n");
+	so->parent.fshell =
+			wl_registry_bind(so->parent.registry,
+					 12,
+					 &zwp_fullscreen_shell_v1_interface,
+					 1);
+
+	weston_log("Manually bind compositor\n");
+	so->parent.compositor =
+			wl_registry_bind(so->parent.registry,
+					 1, &wl_compositor_interface, 1);
+*/
 	if (so->parent.shm == NULL) {
 		weston_log("Screen share failed: No wl_shm found\n");
 		goto err_display;

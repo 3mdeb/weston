@@ -3468,11 +3468,13 @@ weston_seat_release(struct weston_seat *seat)
 	if (seat->touch_state)
 		weston_touch_destroy(seat->touch_state);
 
+	weston_log("libweston/input.c: Free seat %s\n", seat->seat_name);
 	free (seat->seat_name);
 
 	wl_global_destroy(seat->global);
 
 	wl_signal_emit(&seat->destroy_signal, seat);
+	weston_log("libweston/input.c: Exit weston_seat_release\n");
 }
 
 /** Get a seat's keyboard pointer

@@ -7472,7 +7472,7 @@ WL_EXPORT void
 weston_compositor_shutdown(struct weston_compositor *ec)
 {
 	struct weston_output *output, *next;
-
+	weston_log("compositor: weston_compositor_shutdown\n");
 	wl_event_source_remove(ec->idle_source);
 
 	/* Destroy all outputs associated with this compositor */
@@ -7804,6 +7804,7 @@ weston_compositor_add_destroy_listener_once(struct weston_compositor *compositor
 WL_EXPORT void
 weston_compositor_destroy(struct weston_compositor *compositor)
 {
+	weston_log("compositor: weston_compositor_destroy\n");
 	/* prevent further rendering while shutting down */
 	compositor->state = WESTON_COMPOSITOR_OFFSCREEN;
 
