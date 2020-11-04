@@ -265,6 +265,13 @@ demo_clients = [
 			fullscreen_shell_unstable_v1_protocol_c,
 		]
 	},
+	{
+		'basename': 'fullscreen-image',
+		'add_sources': [
+			fullscreen_shell_unstable_v1_client_protocol_h,
+			fullscreen_shell_unstable_v1_protocol_c,
+		]
+	},
 	{ 'basename': 'image' },
 	{ 'basename': 'multi-resource' },
 	{
